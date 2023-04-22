@@ -79,7 +79,9 @@ $(document).ready(function(){
             $('.dragger').css("margin-top","351px");
             $('.fretboard').css("height","351px");
             $('.nut').css("height","351px");
-            $('.pattern').css("background","url(images/diatonic-pattern-8.png) repeat-x");
+            $('.pattern').css("background","url(images/diatonic-pattern-8.svg) repeat-x");
+            $('.pattern').css("background-size","600px, 312px");
+            $('.pattern').css("height","342px")
             $('#ergMode').attr("data-toggle","on");
             $('#ergMode').text("8 Strings On");
             $('.scale-selector').toggle();
@@ -90,7 +92,9 @@ $(document).ready(function(){
             $('.dragger').css("margin-top","273px");
             $('.fretboard').css("height","273px");
             $('.nut').css("height","273px");
-            $('.pattern').css("background","url(images/diatonic-pattern.png) repeat-x");
+            $('.pattern').css("background","url(images/diatonic-pattern.svg) repeat-x");
+            $('.pattern').css("background-size","600px, 237px");
+            $('pattern').css("height","234px");
             $('#ergMode').attr("data-toggle","off");
             $('#ergMode').text("8 Strings Off");
             $('.scale-selector').toggle();            
