@@ -140,7 +140,7 @@ body {
 .pattern {
     position: absolute;
     margin-bottom: -78px;
-    height: 258px;
+    height: 270px;
     top: 39px; left: 0; right: 0; bottom: 0;
     background: url(images/diatonic-pattern.svg) repeat-x;
     background-size: 600px, 237px;
