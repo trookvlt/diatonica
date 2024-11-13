@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diatonica 2.0</title>
+    <style>
+        /* Keep your existing CSS unchanged */
+        body {
+            background-color: #c0c0c0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .input-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+        .input-container div {
+            text-align: center;
+        }
+        .input-container label {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .input-container input,
+        .input-container select,
+        .input-container button {
+            margin-top: 5px;
+            width: 90%;
+            padding: 5px;
+            font-size: 14px;
+        }
+        .fretboard {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+        }
+        .string {
+            display: flex;
+            margin-bottom: 1px;
+        }
+        .fret {
+            background-color: #ffffff;
+            width: 40px;
+            height: 40px;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            position: relative;
+        }
+        .fret-number-row {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        .fret-number {
+            background-color: #dcdcdc;
+            width: 40px;
+            height: 20px;
+            border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .root .circle, .scale-note .circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: absolute;
+            top: 6px;
+            left: 6px;
+        }
+        .root .circle {
+            background-color: red;
+            color: white;
+            font-weight: bold;
+        }
+        .scale-note .circle {
+            background-color: lightblue;
+            color: black;
+        }
+        .info {
+            margin-top: 15px;
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <!-- Keep your existing HTML unchanged -->
+    <div class="input-container">
+        <div><label for="tuning">Enter Tuning</label></div>
+        <div><label for="rootNote">Root Note</label></div>
+        <div><label for="scaleIntervals">Scale Intervals</label></div>
+        <div><label for="visibleDegrees">Visible Degrees</label></div>
+        <div><label>Actions</label></div>
+        <div>
+            <input type="text" id="tuning" value="E,A,D,G,B,E">
+        </div>
+        <div>
+            <select id="rootNote" onchange="resetToRootScale()">
+                <option value="C">C</option>
+                <option value="C#">C#</option>
+                <option value="D">D</option>
+                <option value="D#">D#</option>
+                <option value="E" selected>E</option>
+                <option value="F">F</option>
+                <option value="F#">F#</option>
+                <option value="G">G</option>
+                <option value="G#">G#</option>
+                <option value="A">A</option>
+                <option value="A#">A#</option>
+                <option value="B">B</option>
+            </select>
+        </div>
+        <div>
+            <input type="text" id="scaleIntervals" value="2,2,1,2,2,2,1" onchange="resetToRootScale()">
+        </div>
+        <div>
+            <input type="text" id="visibleDegrees" value="1,2,3,4,5,6,7" onchange="generateFretboard()">
+        </div>
+        <div>
+            <button onclick="generateFretboard()">Generate</button>
+            <button onclick="decrementMode()">-</button>
+            <button onclick="incrementMode()">+</button>
+        </div>
+    </div>
+
+    <div class="fretboard" id="fretboard"></div>
+    <div class="info" id="modeInfo">Key: E, Mode: Ionian</div>
+
+    <script>
+        // JavaScript Code
+        const chromaticScale = ["A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab"];
+        let majorScaleIntervals = [2, 2, 1, 2, 2, 2, 1];
+        const modeNames = ["Ionian", "Dorian", "Phrygian", "Lydian", "Mixolydian", "Aeolian", "Locrian"];
+        let currentDegree = 1;
+        let rootNote = "E";
+
+        function getScaleNotes(root, degree) {
+            const startIndex = chromaticScale.indexOf(root);
+            const notes = [];
+            let currentIndex = startIndex;
+            notes.push(chromaticScale[currentIndex]);
+            
+            for (let i = 0; i < 6; i++) {
+                const interval = majorScaleIntervals[(degree - 1 + i) % 7];
+                currentIndex = (currentIndex + interval) % chromaticScale.length;
+                notes.push(chromaticScale[currentIndex]);
+            }
+            return notes;
+        }
+
+        function parseIntervals() {
+            const intervalsInput = document.getElementById("scaleIntervals").value;
+            majorScaleIntervals = intervalsInput.split(',').map(Number);
+        }
+
+        function parseVisibleDegrees() {
+            const visibleInput = document.getElementById("visibleDegrees").value;
+            const visibleDegrees = visibleInput.split(',').map(Number);
+            return new Set(visibleDegrees);
+        }
+
+        function generateFretboard() {
+            const tuningInput = document.getElementById("tuning").value;
+            let tuningInputRev = tuningInput.split(",").reverse();
+            rootNote = document.getElementById("rootNote").value;
+            const tuning = tuningInputRev.map(note => note.trim().toUpperCase());
+            const numFrets = 24;
+            const fretboard = document.getElementById("fretboard");
+            fretboard.innerHTML = ""; // Clear existing fretboard
+
+            parseIntervals();
+            const scaleNotes = getScaleNotes(rootNote, currentDegree);
+            const visibleDegrees = parseVisibleDegrees();
+
+            // Create the fret number row
+            const fretNumberRow = document.createElement("div");
+            fretNumberRow.classList.add("fret-number-row");
+            for (let fret = 0; fret <= numFrets; fret++) {
+                const fretNumberDiv = document.createElement("div");
+                fretNumberDiv.classList.add("fret-number");
+                fretNumberDiv.textContent = fret;
+                fretNumberRow.appendChild(fretNumberDiv);
+            }
+            fretboard.appendChild(fretNumberRow);
+
+            for (let string = 0; string < tuning.length; string++) {
+                const stringDiv = document.createElement("div");
+                stringDiv.classList.add("string");
+
+                let noteIndex = chromaticScale.indexOf(tuning[string]);
+
+                for (let fret = 0; fret <= numFrets; fret++) {
+                    const fretDiv = document.createElement("div");
+                    fretDiv.classList.add("fret");
+
+                    const note = chromaticScale[(noteIndex + fret) % chromaticScale.length];
+                    const scaleDegree = scaleNotes.indexOf(note) + 1;
+
+                    if (note === rootNote || (scaleNotes.includes(note) && visibleDegrees.has(scaleDegree))) {
+                        const noteCircle = document.createElement("div");
+                        noteCircle.classList.add("circle");
+                        noteCircle.textContent = note;
+
+                        if (note === rootNote) {
+                            fretDiv.classList.add("root");
+                        } else {
+                            fretDiv.classList.add("scale-note");
+                        }
+                        fretDiv.appendChild(noteCircle);
+                    }
+
+                    stringDiv.appendChild(fretDiv);
+                }
+
+                fretboard.appendChild(stringDiv);
+            }
+
+            const modeInfo = document.getElementById("modeInfo");
+            modeInfo.textContent = `Key: ${rootNote}, Mode: ${modeNames[currentDegree - 1]}`;
+        }
+
+        function resetToRootScale() {
+            currentDegree = 1;
+            generateFretboard();
+        }
+
+        function incrementMode() {
+            currentDegree = (currentDegree % 7) + 1;
+            generateFretboard();
+        }
+
+        function decrementMode() {
+            currentDegree = (currentDegree - 2 + 7) % 7 + 1;
+            generateFretboard();
+        }
+
+        // Generate initial fretboard on page load
+        generateFretboard();
+    </script>
+</body>
+</html>
